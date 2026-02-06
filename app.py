@@ -18,7 +18,7 @@ def load_user(user_id):
 
 # Вказуємо, де буде лежати файл бази даних (у папці instance) 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///helpdesk.db'
-app.config['SECRET_KEY'] = 'secret_key_for_university_project' # Потрібен для сесій/безпеки
+app.config['SECRET_KEY'] = 'helpdesk-secret-key' # Потрібен для сесій/безпеки
 
 # Ініціалізація БД
 db = SQLAlchemy(app)
