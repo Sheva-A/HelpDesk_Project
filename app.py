@@ -49,8 +49,57 @@ class Ticket(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 # МАРШРУТИ (Контролери)
-# Backend Logic Dev пише код тут
+# Backend Logic Dev пише код тут 
 
+ALLOWED_DOMAIN = '@stud.duikt.edu.ua'  
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    # Якщо користувач вже авторизований - не пускаємо на реєстрацію
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard')) # Або інший редірект
+
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        room_number = request.form.get('room_number')
+
+        
+        # 1. Перевірка домену 
+        if not username or not username.endswith(ALLOWED_DOMAIN):
+            flash(f'Реєстрація дозволена лише для пошти домену {ALLOWED_DOMAIN}', 'danger')
+            return redirect(url_for('register'))
+
+        # 2. Перевірка на унікальність 
+        if User.query.filter_by(username=username).first():
+            flash('Користувач з таким email вже існує', 'danger')
+            return redirect(url_for('register'))
+
+
+        try:
+            # Хешування паролю 
+            hashed_password = generate_password_hash(password)
+
+            # Створення користувача 
+            new_user = User(
+                username=username,
+                password=hashed_password,
+                role='student',
+                room_number=room_number
+            )
+
+            db.session.add(new_user)
+            db.session.commit()
+
+            flash('Реєстрація успішна! Увійдіть у систему.', 'success')
+            return redirect(url_for('login'))
+            
+        except Exception as e:
+            db.session.rollback()
+            # У реальному проді помилку краще писати в лог, а юзеру показувати загальну
+            flash(f'Помилка при збереженні: {str(e)}', 'danger')
+
+    return render_template('register.html')
 @app.route('/index')
 def index():
     # Це головна сторінка (або редірект на логін)
@@ -78,4 +127,4 @@ def create_ticket():
 
 # ЗАПУСК
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True) 
