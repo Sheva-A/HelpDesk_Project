@@ -98,6 +98,39 @@ def register():
             db.session.rollback()
             # У реальному проді помилку краще писати в лог, а юзеру показувати загальну
             flash(f'Помилка при збереженні: {str(e)}', 'danger')
+            @app.route('/login', methods=['GET', 'POST'])
+def login():
+    # 1. Если пользователь уже авторизован — сообщаем об этом
+    if current_user.is_authenticated:
+        return "Ви вже увійшли в систему."
+
+    # 2. Обработка формы входа
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        # Ищем пользователя в базе
+        user = User.query.filter_by(username=username).first()
+
+        # Проверяем пароль
+        if user and check_password_hash(user.password, password):
+            login_user(user) # Создает сессию (вход выполнен)
+            flash('Вхід успішний!', 'success')
+            
+            # Когда вы напишете маршруты dashboard/my_tickets,
+            # раскомментируйте строки ниже:
+            
+            if user.role == 'admin':
+                # return redirect(url_for('dashboard')) 
+                return "LOGIN SUCCESS: Hello Admin! (Маршрут dashboard еще не создан)"
+            else:
+                # return redirect(url_for('my_tickets'))
+                return "LOGIN SUCCESS: Hello Student! (Маршрут my_tickets еще не создан)"
+        else:
+            flash('Невірний логін або пароль.', 'danger')
+
+    # 3. Если метод GET — показываем HTML-форму
+    return render_template('login.html')
 
     return render_template('register.html')
 @app.route('/index')
