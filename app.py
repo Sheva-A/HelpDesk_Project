@@ -89,6 +89,7 @@ def register():
 
     return render_template('register.html')
 
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     # Якщо користувач вже увійшов, перенаправляємо за роллю
@@ -110,7 +111,7 @@ def login():
 
     return render_template('login.html')
 @app.route('/create_ticket', methods=['GET', 'POST'])
-@login_required  # Обов'язково: доступ тільки авторизованим
+@login_required  #  доступ тільки авторизованим
 def create_ticket():
     # 1. ОБРОБКА ДАНИХ (Метод POST)
     if request.method == 'POST':
@@ -127,7 +128,7 @@ def create_ticket():
             new_ticket = Ticket(
                 title=title,
                 description=description,
-                user_id=current_user.id,  # "Магія": прив'язуємо до того, хто зараз залогінений
+                user_id=current_user.id,  #  прив'язуємо до того, хто зараз залогінений
                 status='Нова'
             )
 
@@ -147,6 +148,16 @@ def create_ticket():
 
     # 2. ВІДОБРАЖЕННЯ ФОРМИ (Метод GET)
     return render_template('create_ticket.html') 
+@app.route('/my_tickets')
+@login_required
+def my_tickets():
+    # 1. Запит в БД: знайти заявки, де user_id дорівнює ID поточного користувача
+    # .order_by(Ticket.created_at.desc()) - сортує: нові зверху
+    tickets = Ticket.query.filter_by(user_id=current_user.id).order_by(Ticket.created_at.desc()).all()
+    
+    # 2. Віддаємо список заявок у шаблон HTML
+    return render_template('my_tickets.html', tickets=tickets)
+
 
 @app.route('/logout')
 @login_required
