@@ -109,6 +109,44 @@ def login():
         flash('Невірні дані для входу', 'danger')
 
     return render_template('login.html')
+@app.route('/create_ticket', methods=['GET', 'POST'])
+@login_required  # Обов'язково: доступ тільки авторизованим
+def create_ticket():
+    # 1. ОБРОБКА ДАНИХ (Метод POST)
+    if request.method == 'POST':
+        title = request.form.get('title')
+        description = request.form.get('description')
+
+        # Валідація: чи не пусті поля
+        if not title or not description:
+            flash('Будь ласка, заповніть всі поля!', 'warning')
+            return redirect(url_for('create_ticket'))
+
+        try:
+            # Створення об'єкта заявки
+            new_ticket = Ticket(
+                title=title,
+                description=description,
+                user_id=current_user.id,  # "Магія": прив'язуємо до того, хто зараз залогінений
+                status='Нова'
+            )
+
+            # Збереження в Базу Даних
+            db.session.add(new_ticket)
+            db.session.commit()
+            
+            flash('Заявку успішно створено!', 'success')
+            
+            # Перенаправлення на список заявок
+            return redirect(url_for('my_tickets')) 
+
+        except Exception as e:
+            # Якщо сталася помилка БД -> відкочуємо зміни
+            db.session.rollback()
+            flash(f'Помилка створення заявки: {str(e)}', 'danger')
+
+    # 2. ВІДОБРАЖЕННЯ ФОРМИ (Метод GET)
+    return render_template('create_ticket.html') 
 
 @app.route('/logout')
 @login_required
@@ -137,4 +175,4 @@ def create_ticket():
     return "Тут буде форма для нової заявки"
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True) 
