@@ -13,7 +13,7 @@ db = SQLAlchemy(app)
 
 # Налаштування менеджера логіну
 login_manager = LoginManager(app)
-login_manager.login_view = 'login' # Перенаправляє сюди, якщо доступ заборонено
+login_manager.login_view = 'login'  # Перенаправляє сюди, якщо доступ заборонено
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -24,10 +24,10 @@ def load_user(user_id):
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False) # Використовуємо email як логін
+    username = db.Column(db.String(80), unique=True, nullable=False)  # Використовуємо email як логін
     password = db.Column(db.String(200), nullable=False)
     role = db.Column(db.String(20), nullable=False, default='student')
-    room_number = db.Column(db.String(10), nullable=True) # Тільки для студентів
+    room_number = db.Column(db.String(10), nullable=True)  # Тільки для студентів
     # Зв'язок: дозволяє отримати всі заявки користувача через user.tickets
     tickets = db.relationship('Ticket', backref='author', lazy=True)
 
@@ -49,6 +49,7 @@ ALLOWED_DOMAIN = '@stud.duikt.edu.ua'
 def index():
     # Головна сторінка 
     return render_template('index.html')
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -110,10 +111,12 @@ def login():
         flash('Невірні дані для входу', 'danger')
 
     return render_template('login.html')
+
+
 @app.route('/create_ticket', methods=['GET', 'POST'])
-@login_required  #  доступ тільки авторизованим
+@login_required
 def create_ticket():
-    # 1. ОБРОБКА ДАНИХ (Метод POST)
+    # Форма створення нової заявки
     if request.method == 'POST':
         title = request.form.get('title')
         description = request.form.get('description')
@@ -124,81 +127,68 @@ def create_ticket():
             return redirect(url_for('create_ticket'))
 
         try:
-            # Створення об'єкта заявки
+            # Створення об'єкта заявки та прив'язка до автора
             new_ticket = Ticket(
                 title=title,
                 description=description,
-                user_id=current_user.id,  #  прив'язуємо до того, хто зараз залогінений
+                user_id=current_user.id,
                 status='Нова'
             )
 
-            # Збереження в Базу Даних
+            # Збереження нової заявки в базу даних
             db.session.add(new_ticket)
             db.session.commit()
             
             flash('Заявку успішно створено!', 'success')
-            
-            # Перенаправлення на список заявок
             return redirect(url_for('my_tickets')) 
 
         except Exception as e:
-            # Якщо сталася помилка БД -> відкочуємо зміни
+            # Відкат змін у разі помилки
             db.session.rollback()
             flash(f'Помилка створення заявки: {str(e)}', 'danger')
 
-    # 2. ВІДОБРАЖЕННЯ ФОРМИ (Метод GET)
+    # Відображення сторінки з формою
     return render_template('create_ticket.html') 
+
+
 @app.route('/my_tickets')
 @login_required
 def my_tickets():
-    #  Запит в БД: знайти заявки, де user_id дорівнює ID поточного користувача
-    # .order_by(Ticket.created_at.desc()) - сортує: нові зверху
+    # Отримання списку заявок поточного користувача
+    # Сортування від новіших до старіших
     tickets = Ticket.query.filter_by(user_id=current_user.id).order_by(Ticket.created_at.desc()).all()
     
-    #  Віддаємо список заявок у шаблон HTML
+    # Передача заявок у шаблон для відображення
     return render_template('my_tickets.html', tickets=tickets)
+
+
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    #  Перевіряємо, чи користувач справді адмін
-    # Якщо сюди спробує зайти звичайний студент - викидаємо його на "Мої заявки"
+    # Панель управління для адміністратора
     if current_user.role != 'admin':
         flash('У вас немає прав доступу до панелі адміністратора!', 'danger')
         return redirect(url_for('my_tickets'))
 
-    # Беремо абсолютно всі заявки з бази
-    # .order_by(Ticket.created_at.desc()) - щоб нові були зверху
+    # Отримання всіх заявок усіх користувачів
     all_tickets = Ticket.query.order_by(Ticket.created_at.desc()).all()
 
-    # 3. передаємо список у шаблон
+    # Відображення списку всіх заявок
     return render_template('dashboard.html', tickets=all_tickets)
 
 
 @app.route('/logout')
 @login_required
 def logout():
-    logout_user() # Вихід
+    # Процес виходу користувача із системи
+    logout_user()
     flash('Ви вийшли з системи', 'info')
+    # Перенаправлення на сторінку входу
     return redirect(url_for('login'))
 
-@app.route('/dashboard')
-@login_required
-def dashboard():
-    # Контроль доступу
-    if current_user.role != 'admin':
-        flash('У вас немає прав для перегляду цієї сторінки', 'danger')
-        return redirect(url_for('my_tickets'))
-    return "Вітаємо, Коменданте! Тут список усіх заявок гуртожитку."
-
-@app.route('/my_tickets')
-@login_required
-def my_tickets():
-    return f"Ваші заявки, {current_user.username}. Кімната: {current_user.room_number}"
-
-@app.route('/create_ticket', methods=['GET', 'POST'])
-@login_required
-def create_ticket():
-    return "Тут буде форма для нової заявки"
 
 if __name__ == '__main__':
-    app.run(debug=True) 
+    # Створення таблиць перед запуском (якщо їх ще немає)
+    with app.app_context():
+        db.create_all()
+    app.run(debug=True)
