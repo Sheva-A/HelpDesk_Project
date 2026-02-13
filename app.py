@@ -151,12 +151,27 @@ def create_ticket():
 @app.route('/my_tickets')
 @login_required
 def my_tickets():
-    # 1. Запит в БД: знайти заявки, де user_id дорівнює ID поточного користувача
+    #  Запит в БД: знайти заявки, де user_id дорівнює ID поточного користувача
     # .order_by(Ticket.created_at.desc()) - сортує: нові зверху
     tickets = Ticket.query.filter_by(user_id=current_user.id).order_by(Ticket.created_at.desc()).all()
     
-    # 2. Віддаємо список заявок у шаблон HTML
+    #  Віддаємо список заявок у шаблон HTML
     return render_template('my_tickets.html', tickets=tickets)
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    #  Перевіряємо, чи користувач справді адмін
+    # Якщо сюди спробує зайти звичайний студент - викидаємо його на "Мої заявки"
+    if current_user.role != 'admin':
+        flash('У вас немає прав доступу до панелі адміністратора!', 'danger')
+        return redirect(url_for('my_tickets'))
+
+    # Беремо абсолютно всі заявки з бази
+    # .order_by(Ticket.created_at.desc()) - щоб нові були зверху
+    all_tickets = Ticket.query.order_by(Ticket.created_at.desc()).all()
+
+    # 3. передаємо список у шаблон
+    return render_template('dashboard.html', tickets=all_tickets)
 
 
 @app.route('/logout')
