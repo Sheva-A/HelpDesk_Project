@@ -86,12 +86,17 @@
         </div>
         <div class="offcanvas-body">
           <ul class="navbar-nav gap-3">
-            <li class="nav-item">
-              <a href="{{ url_for('login') }}" class="btn btn-primary w-100">Увійти</a>
-            </li>
-            <li class="nav-item">
-              <a href="{{ url_for('register') }}" class="btn btn-outline-secondary w-100">Зареєструватися</a>
-            </li>
+          
+                 <li class="nav-item">
+         
+              <button type="button" class="btn btn-primary mt-2">Мої заявки</button>
+              <br>
+              <button type="button" class="btn btn-primary mt-2">Створити заявку</button>
+              <br>
+              <button type="button" class="btn btn-secondary mt-2">Вийти</button>
+
+         </li>
+         
           </ul>
         </div>
       </div>
@@ -102,7 +107,14 @@
     <div class="card w-100" style="max-width: 600px;">
       <div class="card-body p-4">
         <h5 class="card-title">Нове звернення</h5>
-        
+          <div class="position-absolute top-0 end-0">
+            <div class="badge text-bg-primary text-wrap mt-1 me-2" style="width: 3rem; height: 1.5rem;">
+  51-6
+</div>
+          </div>
+         <div class="mb-4">
+            <textarea class="form-control" name="description" id="description" rows="1" placeholder="Яка назва звернення..." required></textarea>
+          </div>
         <form action="{{ url_for('create_ticket') }}" method="POST">
           <div class="mb-3">
             <label class="form-label">Оберіть категорію</label>
