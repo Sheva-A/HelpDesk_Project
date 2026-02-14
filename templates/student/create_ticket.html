@@ -22,11 +22,12 @@
       padding: 20px;
     }
     .card {
-      background: #499BED;
+      background: #A1C6F6;
       color: #022E5B;
       border: none;
       border-radius: 15px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      position: relative;
     }
     .card-title {
         font-weight: bold;
@@ -34,7 +35,7 @@
         margin-bottom: 1.5rem;
     }
     .btn-custom-main {
-      background: #A1C6F6;
+      background: #b2d1f9;
       color: #022E5B;
       border: none;
       font-weight: 500;
@@ -44,12 +45,12 @@
       color: #022E5B;
     }
     .form-control {
-      background: #A1C6F6;
+      background: #b2d1f9;
       color: #022E5B;
       border: none;
     }
     .form-control:focus {
-      background: #b2d1f9;
+      background: #8fb8ed;
       box-shadow: none;
       color: #022E5B;
     }
@@ -58,7 +59,7 @@
       font-weight: 500;
     }
     .form-select-custom {
-      background-color: #A1C6F6;
+      background-color: #b2d1f9;
       color: #022E5B;
       border: none;
       font-size: 14px;
@@ -85,58 +86,64 @@
           <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
         </div>
         <div class="offcanvas-body">
-          <ul class="navbar-nav gap-3">
-          
-                 <li class="nav-item">
-         
-              <button type="button" class="btn btn-primary mt-2">Мої заявки</button>
-              <br>
-              <button type="button" class="btn btn-primary mt-2">Створити заявку</button>
-              <br>
-              <button type="button" class="btn btn-secondary mt-2">Вийти</button>
-
-         </li>
-         
-          </ul>
+          <div class="d-grid gap-2">
+            <a href="{{ url_for('my_tickets') }}" class="btn btn-primary">Мої заявки</a>
+            <a href="{{ url_for('create_ticket') }}" class="btn btn-primary">Створити заявку</a>
+            <hr>
+            <a href="{{ url_for('logout') }}" class="btn btn-secondary">Вийти</a>
+          </div>
         </div>
       </div>
     </div>
   </nav>
 
   <main class="central-container">
-    <div class="card w-100" style="max-width: 600px;">
-      <div class="card-body p-4">
-        <h5 class="card-title">Нове звернення</h5>
-          <div class="position-absolute top-0 end-0">
-            <div class="badge text-bg-primary text-wrap mt-1 me-2" style="width: 3rem; height: 1.5rem;">
-  51-6
-</div>
-          </div>
-         <div class="mb-4">
-            <textarea class="form-control" name="description" id="description" rows="1" placeholder="Яка назва звернення..." required></textarea>
-          </div>
-        <form action="{{ url_for('create_ticket') }}" method="POST">
-          <div class="mb-3">
-            <label class="form-label">Оберіть категорію</label>
-            <select class="form-select form-select-custom mb-3" name="title" required>
-              <option value="" selected disabled>Оберіть тему...</option>
-              <option value="Сантехніка">Сантехніка</option>
-              <option value="Електрика">Електрика</option>
-              <option value="Меблі">Меблі</option>
-              <option value="Інше">Інше</option>
-            </select>
+    <div class="w-100" style="max-width: 600px;">
+      
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <div class="card shadow-sm">
+        <div class="card-body p-4">
+          <h5 class="card-title">Нове звернення</h5>
+          
+          <div class="position-absolute top-0 end-0 mt-2 me-3">
+            <span class="badge text-bg-primary p-2">
+              Кімната: {{ current_user.room_number }}
+            </span>
           </div>
 
-          <div class="mb-4">
-            <label for="description" class="form-label">Опишіть свою проблему</label>
-            <textarea class="form-control" name="description" id="description" rows="4" placeholder="Напишіть деталі тут..." required></textarea>
-          </div>
+          <form action="{{ url_for('create_ticket') }}" method="POST">
+            <div class="mb-3">
+              <label class="form-label">Категорія звернення</label>
+              <select class="form-select form-select-custom w-100" name="title" required>
+                <option value="" selected disabled>Оберіть тему...</option>
+                <option value="Сантехніка">Сантехніка</option>
+                <option value="Електрика">Електрика</option>
+                <option value="Меблі">Меблі</option>
+                <option value="Інше">Інше</option>
+              </select>
+            </div>
 
-          <div class="d-flex justify-content-end">
-            <button type="submit" class="btn btn-custom-main px-4">Відправити</button>
-          </div>
-        </form>
+            <div class="mb-4">
+              <label for="description" class="form-label">Опишіть вашу проблему</label>
+              <textarea class="form-control" name="description" id="description" rows="5" placeholder="Напишіть деталі тут (що саме зламалося, коли зручно прийняти майстра)..." required></textarea>
+            </div>
 
+            <div class="d-flex justify-content-end">
+              <button type="submit" class="btn btn-custom-main px-5 py-2 shadow-sm">Відправити заявку</button>
+            </div>
+          </form>
+
+        </div>
       </div>
     </div>
   </main>
