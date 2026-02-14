@@ -62,6 +62,11 @@ def register():
         password = request.form.get('password')
         room_number = request.form.get('room_number')
 
+        # Перевірка довжини пароля
+        if not password or len(password) < 8:
+            flash('Пароль має містити не менше 8 символів', 'danger')
+            return redirect(url_for('register'))
+
         # Перевірка корпоративної пошти
         if not username or not username.endswith(ALLOWED_DOMAIN):
             flash(f'Реєстрація тільки для пошти {ALLOWED_DOMAIN}', 'danger')
@@ -89,7 +94,6 @@ def register():
             flash(f'Помилка бази даних: {str(e)}', 'danger')
 
     return render_template('register.html')
-
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -147,19 +151,16 @@ def create_ticket():
             db.session.rollback()
             flash(f'Помилка створення заявки: {str(e)}', 'danger')
 
-    # Відображення сторінки з формою
-    return render_template('create_ticket.html') 
+    return render_template('student/create_ticket.html') 
 
 
 @app.route('/my_tickets')
 @login_required
 def my_tickets():
     # Отримання списку заявок поточного користувача
-    # Сортування від новіших до старіших
     tickets = Ticket.query.filter_by(user_id=current_user.id).order_by(Ticket.created_at.desc()).all()
     
-    # Передача заявок у шаблон для відображення
-    return render_template('my_tickets.html', tickets=tickets)
+    return render_template('student/my_tickets.html', tickets=tickets)
 
 
 @app.route('/dashboard')
@@ -173,8 +174,7 @@ def dashboard():
     # Отримання всіх заявок усіх користувачів
     all_tickets = Ticket.query.order_by(Ticket.created_at.desc()).all()
 
-    # Відображення списку всіх заявок
-    return render_template('dashboard.html', tickets=all_tickets)
+    return render_template('admin/dashboard.html', tickets=all_tickets)
 
 
 @app.route('/logout')
@@ -183,12 +183,10 @@ def logout():
     # Процес виходу користувача із системи
     logout_user()
     flash('Ви вийшли з системи', 'info')
-    # Перенаправлення на сторінку входу
     return redirect(url_for('login'))
 
 
 if __name__ == '__main__':
-    # Створення таблиць перед запуском (якщо їх ще немає)
     with app.app_context():
         db.create_all()
     app.run(debug=True)
