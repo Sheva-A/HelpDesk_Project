@@ -13,7 +13,7 @@ db = SQLAlchemy(app)
 
 # Налаштування менеджера логіну
 login_manager = LoginManager(app)
-login_manager.login_view = 'login'  # Перенаправляє сюди, якщо доступ заборонено
+login_manager.login_view = 'login'
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -21,14 +21,12 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 # МОДЕЛІ БД
-
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)  # Використовуємо email як логін
+    username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
     role = db.Column(db.String(20), nullable=False, default='student')
-    room_number = db.Column(db.String(10), nullable=True)  # Тільки для студентів
-    # Зв'язок: дозволяє отримати всі заявки користувача через user.tickets
+    room_number = db.Column(db.String(10), nullable=True)
     tickets = db.relationship('Ticket', backref='author', lazy=True)
 
 class Ticket(db.Model):
@@ -38,45 +36,53 @@ class Ticket(db.Model):
     status = db.Column(db.String(20), default='Нова')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     admin_comment = db.Column(db.Text, nullable=True)
-    # Зовнішній ключ для зв'язку з таблицею User
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 # МАРШРУТИ
-
 ALLOWED_DOMAIN = '@stud.duikt.edu.ua'
 
 @app.route('/')
 def index():
-    # Головна сторінка 
     return render_template('index.html')
-
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    # Якщо користувач вже увійшов, перенаправляємо за роллю
     if current_user.is_authenticated:
         return redirect(url_for('dashboard' if current_user.role == 'admin' else 'my_tickets'))
 
     if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
+        # Видаляємо зайві пробіли на початку і в кінці
+        # Робимо email нечутливим до регістру
+        username = request.form.get('username', '').strip().lower()
+        password = request.form.get('password', '')
         room_number = request.form.get('room_number')
 
-        # Перевірка довжини пароля
-        if not password or len(password) < 8:
-            flash('Пароль має містити не менше 8 символів', 'danger')
+        # Перевірка, чи пароль не порожній та не складається лише з пробілів
+        if not password or password.strip() == "":
+            flash('Пароль не може бути порожнім або складатися лише з пробілів', 'danger')
             return redirect(url_for('register'))
 
-        # Перевірка корпоративної пошти
+        # Перевірка мінімальної довжини
+        if len(password) < 8:
+            flash('Пароль має містити не менше 8 символів', 'danger')
+            return redirect(url_for('register'))
+        
+        # Перевірка максимальної довжини
+        if len(password) > 250:
+            flash('Пароль занадто довгий (максимум 250 символів)', 'danger')
+            return redirect(url_for('register'))
+
+        # Перевірка домену
         if not username or not username.endswith(ALLOWED_DOMAIN):
             flash(f'Реєстрація тільки для пошти {ALLOWED_DOMAIN}', 'danger')
             return redirect(url_for('register'))
 
-        # Перевірка, чи пошта вже зайнята
+        # Перевірка на унікальність email в системі
         if User.query.filter_by(username=username).first():
             flash('Цей Email вже зареєстровано', 'danger')
             return redirect(url_for('register'))
 
+        # Спроба створити нового користувача
         try:
             # Хешування пароля та збереження
             new_user = User(
@@ -97,13 +103,23 @@ def register():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    # Якщо користувач вже увійшов, перенаправляємо за роллю
     if current_user.is_authenticated:
         return redirect(url_for('dashboard' if current_user.role == 'admin' else 'my_tickets'))
 
     if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
+        username = request.form.get('username', '').strip().lower()
+        password = request.form.get('password', '')
+
+        # Перевірка на пробіли при вході
+        if not password or password.strip() == "":
+            flash('Введіть пароль', 'danger')
+            return redirect(url_for('login'))
+
+        # Обмеження довжини при вході
+        if len(password) > 250:
+            flash('Пароль занадто довгий', 'danger')
+            return redirect(url_for('login'))
+
         user = User.query.filter_by(username=username).first()
 
         # Перевірка пароля через хеш
@@ -115,7 +131,6 @@ def login():
         flash('Невірні дані для входу', 'danger')
 
     return render_template('login.html')
-
 
 @app.route('/create_ticket', methods=['GET', 'POST'])
 @login_required
