@@ -66,6 +66,19 @@
 
 <body>
 
+  <div class="container mt-3">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-toggle="collapse" data-bs-target=".alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+</div>
+
   <nav class="navbar bg-white border-bottom fixed-top shadow-sm">
     <div class="container-fluid">
       <a class="navbar-brand fw-bold text-primary" href="{{ url_for('index') }}">HelpDesk</a>
@@ -96,59 +109,50 @@
   </nav>
 
   <main class="central-container shadow-sm">
-    <table class="table">
-  <thead>
-    <tr>
-      <th scope="col">Кімната</th>
-      <th scope="col">Дата</th>
-      <th scope="col">Ім'я/email</th>
-      <th scope="col">Тема</th>
-      <th scope="col">Статус</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th scope="row">51-6</th>
-      <td>12-02-2026</td>
-      <td>Otto</td>
-      <td>Електрика</td>
-       <td style="color: lime;"><svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-circle-fill" viewBox="0 0 16 16">
-  <circle cx="8" cy="8" r="8"/>
-</svg></td>
-      <td style="background: transparent; border: none; color: #011a35;"><button class="editing"><svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
-  <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
-  <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
-</svg></button></td>
-    </tr>
-    <tr>
-      <th scope="row">21-2</th>
-      <td>12-02-2026</td>
-      <td>Thornton</td>
-      <td>Сантехніка</td>
-       <td style="color: lime;"><svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-circle-fill" viewBox="0 0 16 16">
-  <circle cx="8" cy="8" r="8"/>
-</svg></td>
-        <td style="background: transparent; border: none; color: #011a35;"><button class="editing"><svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
-  <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
-  <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
-</svg></button></td>
-    </tr>
-    <tr>
-      <th scope="row">32-6</th>
-      <td>12-02-2026</td>
-      <td>johndoe@gmail.com</td>
-      <td>Меблі</td>
-       <td style="color: lime;"><svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-circle-fill" viewBox="0 0 16 16">
-  <circle cx="8" cy="8" r="8"/>
-</svg></td>
-      <td style="background: transparent; border: none; color: #011a35;"><button class="editing"><svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
-  <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
-  <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
-</svg></button></td>
-    </tr>
-    
-  </tbody>
-</table>
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">Кімната</th>
+        <th scope="col">Дата</th>
+        <th scope="col">Користувач</th>
+        <th scope="col">Тема</th>
+        <th scope="col">Статус</th>
+        <th scope="col">Дії</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for ticket in tickets %}
+      <tr>
+        <th scope="row">{{ ticket.author.room_number or '—' }}</th>
+        <td>{{ ticket.created_at.strftime('%d-%m-%Y') }}</td>
+        <td>{{ ticket.author.username.split('@')[0] }}</td>
+        <td>{{ ticket.title }}</td>
+        <td>
+          {# Логіка кольору статусу #}
+          {% if ticket.status == 'Нова' %}
+            <span style="color: #ffc107;">●</span> {{ ticket.status }}
+          {% elif ticket.status == 'В роботі' %}
+            <span style="color: #0d6efd;">●</span> {{ ticket.status }}
+          {% else %}
+            <span style="color: lime;">●</span> {{ ticket.status }}
+          {% endif %}
+        </td>
+        <td>
+          <a href="#" class="text-dark">
+            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+              <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+              <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
+            </svg>
+          </a>
+        </td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="6" class="text-center">Заявок поки немає</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
   </main>
 
   <footer class="navbar fixed-bottom bg-white border-top shadow-sm">
