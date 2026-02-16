@@ -135,7 +135,7 @@
 
             <div class="mb-4">
               <label for="description" class="form-label">Опишіть вашу проблему</label>
-              <textarea class="form-control" name="description" id="description" rows="5" placeholder="Напишіть деталі тут (що саме зламалося, коли зручно прийняти майстра)..." required></textarea>
+              <textarea class="form-control" name="description" id="description" rows="5" maxlength="500" placeholder="Напишіть деталі тут (що саме зламалося, коли зручно прийняти майстра)..." required></textarea>
             </div>
 
             <div class="d-flex justify-content-end">
@@ -152,6 +152,16 @@
     <div class="container-fluid justify-content-center">
       <span class="text-muted small">HelpDesk &copy; 2026 | Всі права захищено</span>
     </div>
+
+    <script>
+      setTimeout(function() {
+        let alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function(alert) {
+          let bsAlert = new bootstrap.Alert(alert);
+          bsAlert.close();
+        });
+      }, 5000);
+    </script>
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

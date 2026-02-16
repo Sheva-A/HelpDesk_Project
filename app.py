@@ -5,22 +5,22 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 
 app = Flask(__name__)
-# Налаштування БД та секретний ключ для захисту сесій
+# Конфігурація БД та сесій
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///helpdesk.db'
 app.config['SECRET_KEY'] = 'helpdesk-secret-key'
 
 db = SQLAlchemy(app)
 
-# Налаштування менеджера логіну
+# Налаштування Flask-Login
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
 @login_manager.user_loader
 def load_user(user_id):
-    # Отримання об'єкта користувача з БД за його ID
     return User.query.get(int(user_id))
 
-# МОДЕЛІ БД
+# МОДЕЛІ
+
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
@@ -39,6 +39,7 @@ class Ticket(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 # МАРШРУТИ
+
 ALLOWED_DOMAIN = '@stud.duikt.edu.ua'
 
 @app.route('/')
@@ -51,40 +52,27 @@ def register():
         return redirect(url_for('dashboard' if current_user.role == 'admin' else 'my_tickets'))
 
     if request.method == 'POST':
-        # Видаляємо зайві пробіли на початку і в кінці
-        # Робимо email нечутливим до регістру
         username = request.form.get('username', '').strip().lower()
         password = request.form.get('password', '')
         room_number = request.form.get('room_number')
 
-        # Перевірка, чи пароль не порожній та не складається лише з пробілів
+        # Валідація пароля
         if not password or password.strip() == "":
-            flash('Пароль не може бути порожнім або складатися лише з пробілів', 'danger')
+            flash('Пароль не може бути порожнім', 'danger')
+            return redirect(url_for('register'))
+        if not (8 <= len(password) <= 250):
+            flash('Довжина пароля: 8-250 символів', 'danger')
             return redirect(url_for('register'))
 
-        # Перевірка мінімальної довжини
-        if len(password) < 8:
-            flash('Пароль має містити не менше 8 символів', 'danger')
-            return redirect(url_for('register'))
-        
-        # Перевірка максимальної довжини
-        if len(password) > 250:
-            flash('Пароль занадто довгий (максимум 250 символів)', 'danger')
-            return redirect(url_for('register'))
-
-        # Перевірка домену
+        # Валідація домену та унікальності
         if not username or not username.endswith(ALLOWED_DOMAIN):
-            flash(f'Реєстрація тільки для пошти {ALLOWED_DOMAIN}', 'danger')
+            flash(f'Дозволено тільки {ALLOWED_DOMAIN}', 'danger')
             return redirect(url_for('register'))
-
-        # Перевірка на унікальність email в системі
         if User.query.filter_by(username=username).first():
-            flash('Цей Email вже зареєстровано', 'danger')
+            flash('Email вже зареєстровано', 'danger')
             return redirect(url_for('register'))
 
-        # Спроба створити нового користувача
         try:
-            # Хешування пароля та збереження
             new_user = User(
                 username=username,
                 password=generate_password_hash(password),
@@ -93,11 +81,11 @@ def register():
             )
             db.session.add(new_user)
             db.session.commit()
-            flash('Акаунт створено! Тепер увійдіть.', 'success')
+            flash('Акаунт створено!', 'success')
             return redirect(url_for('login'))
         except Exception as e:
             db.session.rollback()
-            flash(f'Помилка бази даних: {str(e)}', 'danger')
+            flash(f'Помилка БД: {str(e)}', 'danger')
 
     return render_template('register.html')
 
@@ -110,96 +98,126 @@ def login():
         username = request.form.get('username', '').strip().lower()
         password = request.form.get('password', '')
 
-        # Перевірка на пробіли при вході
-        if not password or password.strip() == "":
-            flash('Введіть пароль', 'danger')
-            return redirect(url_for('login'))
-
-        # Обмеження довжини при вході
-        if len(password) > 250:
-            flash('Пароль занадто довгий', 'danger')
+        if not password or len(password) > 250:
+            flash('Некоректний пароль', 'danger')
             return redirect(url_for('login'))
 
         user = User.query.filter_by(username=username).first()
-
-        # Перевірка пароля через хеш
         if user and check_password_hash(user.password, password):
             login_user(user)
-            flash('Ви успішно увійшли!', 'success')
+            flash('Успішний вхід!', 'success')
             return redirect(url_for('dashboard') if user.role == 'admin' else url_for('my_tickets'))
         
-        flash('Невірні дані для входу', 'danger')
-
+        flash('Невірні дані', 'danger')
     return render_template('login.html')
 
 @app.route('/create_ticket', methods=['GET', 'POST'])
 @login_required
 def create_ticket():
-    # Форма створення нової заявки
     if request.method == 'POST':
         title = request.form.get('title')
-        description = request.form.get('description')
+        description = request.form.get('description', '').strip()
 
-        # Валідація: чи не пусті поля
         if not title or not description:
-            flash('Будь ласка, заповніть всі поля!', 'warning')
+            flash('Опис не може бути порожнім або містити лише пробіли!', 'warning')
+            return redirect(url_for('create_ticket'))
+
+        if len(description) > 500:
+            flash('Опис занадто довгий (максимум 500 символів)', 'danger')
             return redirect(url_for('create_ticket'))
 
         try:
-            # Створення об'єкта заявки та прив'язка до автора
             new_ticket = Ticket(
                 title=title,
                 description=description,
-                user_id=current_user.id,
-                status='Нова'
+                user_id=current_user.id
             )
-
-            # Збереження нової заявки в базу даних
             db.session.add(new_ticket)
             db.session.commit()
-            
-            flash('Заявку успішно створено!', 'success')
+            flash('Заявку створено!', 'success')
             return redirect(url_for('my_tickets')) 
-
         except Exception as e:
-            # Відкат змін у разі помилки
             db.session.rollback()
-            flash(f'Помилка створення заявки: {str(e)}', 'danger')
+            flash('Виникла помилка при збереженні. Спробуйте ще раз.', 'danger')
 
-    return render_template('student/create_ticket.html') 
-
+    return render_template('student/create_ticket.html')
 
 @app.route('/my_tickets')
 @login_required
 def my_tickets():
-    # Отримання списку заявок поточного користувача
     tickets = Ticket.query.filter_by(user_id=current_user.id).order_by(Ticket.created_at.desc()).all()
-    
     return render_template('student/my_tickets.html', tickets=tickets)
-
 
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    # Панель управління для адміністратора
     if current_user.role != 'admin':
-        flash('У вас немає прав доступу до панелі адміністратора!', 'danger')
+        flash('Доступ заборонено!', 'danger')
         return redirect(url_for('my_tickets'))
 
-    # Отримання всіх заявок усіх користувачів
-    all_tickets = Ticket.query.order_by(Ticket.created_at.desc()).all()
-
+    status_filter = request.args.get('status')
+    query = Ticket.query
+    if status_filter:
+        query = query.filter_by(status=status_filter)
+    
+    all_tickets = query.order_by(Ticket.created_at.desc()).all()
     return render_template('admin/dashboard.html', tickets=all_tickets)
-
 
 @app.route('/logout')
 @login_required
 def logout():
-    # Процес виходу користувача із системи
     logout_user()
-    flash('Ви вийшли з системи', 'info')
+    flash('Ви вийшли із системи', 'info')
     return redirect(url_for('login'))
 
+@app.route('/edit_ticket/<int:ticket_id>', methods=['GET', 'POST'])
+@login_required
+def edit_ticket(ticket_id):
+    if current_user.role != 'admin':
+        return redirect(url_for('my_tickets'))
+    
+    ticket = Ticket.query.get_or_404(ticket_id)
+    
+    if request.method == 'POST':
+        new_status = request.form.get('status') or ticket.status
+        admin_comment = request.form.get('admin_comment')
+        old_status = ticket.status
+
+        # Бізнес-логіка статусів
+        if new_status != old_status:
+            if old_status in ['Виконано', 'Відхилено']:
+                flash('Неможливо змінити закриту заявку!', 'danger')
+                return redirect(url_for('edit_ticket', ticket_id=ticket.id))
+            
+            if old_status == 'Нова' and new_status == 'Виконано':
+                flash('Спочатку переведіть в статус "В роботі"!', 'warning')
+                return redirect(url_for('edit_ticket', ticket_id=ticket.id))
+
+        ticket.status = new_status
+        ticket.admin_comment = admin_comment
+        
+        try:
+            db.session.commit()
+            flash('Збережено!', 'success')
+            return redirect(url_for('dashboard'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Помилка БД: {str(e)}', 'danger')
+            return redirect(url_for('edit_ticket', ticket_id=ticket.id))
+
+    return render_template('admin/edit_ticket.html', ticket=ticket)
+
+@app.route('/delete_ticket/<int:ticket_id>', methods=['POST'])
+@login_required
+def delete_ticket(ticket_id):
+    if current_user.role != 'admin':
+        return redirect(url_for('my_tickets'))
+    
+    ticket = Ticket.query.get_or_404(ticket_id)
+    db.session.delete(ticket)
+    db.session.commit()
+    flash('Заявку видалено', 'warning')
+    return redirect(url_for('dashboard'))
 
 if __name__ == '__main__':
     with app.app_context():
