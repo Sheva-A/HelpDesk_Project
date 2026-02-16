@@ -20,7 +20,7 @@
       width: 80%;
       margin: 0 auto;
       background: #A1C6F6;
-      border-radius: 10px;
+      border-radius: 15px;
       padding: 20px;
       flex-grow: 1;
     }
@@ -30,7 +30,7 @@
       background: #b2d1f9;
       color: #022E5B;
       margin-bottom: 15px;
-      border-radius: 10px;
+      border-radius: 15px;
       padding: 15px;
     }
 
@@ -50,6 +50,22 @@
       position: relative;
       height: 500px;
       overflow: auto;
+    }
+        /* style for status */
+    .in_work{
+      color: #0d6efd;
+    }
+    .new{
+      color: limegreen;
+    }
+    .declined{
+      color: grey;
+    }
+    .etc{
+      color: red;
+    }
+    .else{
+      color: #ffc107;
     }
   </style>
 </head>
@@ -74,10 +90,9 @@
       <a class="navbar-brand fw-bold text-primary" href="{{ url_for('index') }}">HelpDesk</a>
 
       <button class="navbar-toggler border-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar">
-        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
-          <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
-          <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z" />
-        </svg>
+       <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-list" viewBox="0 0 16 16">
+  <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5"/>
+</svg>
       </button>
 
       <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar">
@@ -104,11 +119,11 @@
         <div class="col-md-4">
           <div id="simple-list-example" class="d-flex flex-column gap-2 text-center">
             {% for ticket in tickets %}
-            <a class="p-2 rounded shadow-sm mb-1 p-1" href="#ticket-{{ ticket.id }}">
+            <a class="p-2 rounded shadow-sm mb-2 p-1" href="#ticket-{{ ticket.id }}">
               {{ ticket.title }} 
               <span class="ms-2">
                 <svg width="12" height="12" 
-                  fill="{% if ticket.status == 'Нова' %}lime{% elif ticket.status == 'В процесі' %}#022E5B{% else %}grey{% endif %}">
+                  fill="{% if ticket.status == 'Нова' %}limegreen{% elif ticket.status == 'В процесі' %}#0d6efd{% else %}grey{% endif %}">
                   <circle cx="6" cy="6" r="6" />
                 </svg>
               </span>
@@ -126,16 +141,16 @@
             <div id="ticket-{{ ticket.id }}" class="card-body shadow-sm">
               <div class="d-flex justify-content-between">
                 <h5>{{ ticket.title }}</h5>
-                <span class="badge {% if ticket.status == 'Нова' %}text-bg-success{% else %}text-bg-secondary{% endif %}">
+                <span style="text-align: center;" class="badge {% if ticket.status == 'Нова' %}text-bg-success{% else %}text-bg-secondary{% endif %} mt-1">
                   {{ ticket.status }}
                 </span>
               </div>
               <h6 class="card-subtitle mb-2 text-muted small">
                 {{ ticket.created_at.strftime('%d.%m.%Y %H:%M') }}
               </h6>
-              <p class="card-text"><strong>Ваш опис:</strong><br>{{ ticket.description }}</p>
+              <p class="card-text" style="overflow-wrap: break-word;"><strong>Ваш опис:</strong><br>{{ ticket.description }}</p>
               <hr>
-              <p class="card-text">
+              <p class="card-text" style="overflow-wrap: break-word;">
                 <strong>Відповідь адміністратора:</strong><br>
                 {{ ticket.admin_comment if ticket.admin_comment else "Очікуйте на відповідь..." }}
               </p>
