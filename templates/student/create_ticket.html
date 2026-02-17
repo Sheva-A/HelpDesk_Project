@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="uk">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -14,6 +15,7 @@
       padding-top: 70px;
       padding-bottom: 60px;
     }
+
     .central-container {
       flex: 1;
       display: flex;
@@ -21,43 +23,53 @@
       justify-content: center;
       padding: 20px;
     }
+
     .card {
       background: #A1C6F6;
       color: #022E5B;
       border: none;
       border-radius: 15px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
       position: relative;
     }
+
     .card-title {
-        font-weight: bold;
-        text-align: center;
-        margin-bottom: 1.5rem;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 1.5rem;
     }
+
     .btn-custom-main {
       background: #b2d1f9;
       color: #022E5B;
       border: none;
       font-weight: 500;
+      transition: 0.3s;
     }
+
     .btn-custom-main:hover {
       background: #8fb8ed;
       color: #022E5B;
+      transform: translateY(-1px);
     }
+
     .form-control {
       background: #b2d1f9;
       color: #022E5B;
       border: none;
     }
+
     .form-control:focus {
       background: #8fb8ed;
       box-shadow: none;
       color: #022E5B;
     }
+
     .form-label {
       color: #022E5B;
       font-weight: 500;
     }
+
     .form-select-custom {
       background-color: #b2d1f9;
       color: #022E5B;
@@ -65,34 +77,19 @@
       font-size: 14px;
       width: auto;
     }
-        /* style for status */
-    .in_work{
-      color: #0d6efd;
-    }
-    .new{
-      color: limegreen;
-    }
-    .declined{
-      color: grey;
-    }
-    .etc{
-      color: red;
-    }
-    .else{
-      color: #ffc107;
-    }
   </style>
 </head>
+
 <body>
 
   <nav class="navbar bg-white border-bottom fixed-top shadow-sm">
     <div class="container-fluid">
       <a class="navbar-brand fw-bold text-primary" href="{{ url_for('index') }}">HelpDesk</a>
-      
+
       <button class="navbar-toggler border-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar">
         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-list" viewBox="0 0 16 16">
-  <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5"/>
-</svg>
+          <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5" />
+        </svg>
       </button>
 
       <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar">
@@ -114,7 +111,7 @@
 
   <main class="central-container">
     <div class="w-100" style="max-width: 600px;">
-      
+
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
           {% for category, message in messages %}
@@ -129,7 +126,7 @@
       <div class="card shadow-sm">
         <div class="card-body p-4">
           <h5 class="card-title">Нове звернення</h5>
-          
+
           <div class="position-absolute top-0 end-0 mt-2 me-3">
             <span class="badge text-bg-primary p-2">
               Кімната: {{ current_user.room_number }}
@@ -167,18 +164,18 @@
     <div class="container-fluid justify-content-center">
       <span class="text-muted small">HelpDesk &copy; 2026 | Всі права захищено</span>
     </div>
-
-    <script>
-      setTimeout(function() {
-        let alerts = document.querySelectorAll('.alert');
-        alerts.forEach(function(alert) {
-          let bsAlert = new bootstrap.Alert(alert);
-          bsAlert.close();
-        });
-      }, 5000);
-    </script>
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    setTimeout(function() {
+      let alerts = document.querySelectorAll('.alert');
+      alerts.forEach(function(alert) {
+        let bsAlert = new bootstrap.Alert(alert);
+        bsAlert.close();
+      });
+    }, 5000);
+  </script>
 </body>
+
 </html>

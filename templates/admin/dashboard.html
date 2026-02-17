@@ -56,85 +56,62 @@
       color: #0d6efd;
       transform: scale(1.1);
     }
-        /* style for status (якщо що всі коментарі тут - мої)*/
-    .in_work{
-      color: #0d6efd;
-    }
-    .new{
-      color: limegreen;
-    }
-    .declined{
-      color: grey;
-    }
-    .etc{
-      color: red;
-    }
-    .else{
-      color: #ffc107;
-    }
-@media (max-width: 1024px) {
-  .table thead {
-    display: none;
-  }
-  .table, 
-  .table tbody, 
-  .table tr, 
-  .table td {
-    display: block;
-    width: 100%;
-  }
-  .table tr {
-    margin-bottom: 1rem;
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
-    background: #fff;
-    padding: 10px;
-  }
-  .table td {
-    text-align: left;
-    padding: 8px !important;
-    font-size: 14px;
-    border: none;
-    position: relative;
-  }
-  .table td::before {
-    content: attr(data-label);
-    font-weight: bold;
-    display: block;
-    margin-bottom: 4px;
-    color: #022E5B;
-  }
-}
 
+    @media (max-width: 1024px) {
+      .table thead { display: none; }
+      .table, .table tbody, .table tr, .table td {
+        display: block;
+        width: 100%;
+      }
+      .table tr {
+        margin-bottom: 1rem;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        background: #fff;
+        padding: 10px;
+      }
+      .table td {
+        text-align: left;
+        padding: 8px !important;
+        font-size: 14px;
+        border: none;
+        position: relative;
+      }
+      .table td::before {
+        content: attr(data-label);
+        font-weight: bold;
+        display: block;
+        margin-bottom: 4px;
+        color: #022E5B;
+      }
+    }
   </style>
 </head>
 
 <body>
 
   <div class="container mt-3">
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      {% for category, message in messages %}
-        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-          {{ message }}
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-      {% endfor %}
-    {% endif %}
-  {% endwith %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
   </div>
 
   <nav class="navbar bg-white border-bottom fixed-top shadow-sm">
     <div class="container-fluid">
       <a class="navbar-brand fw-bold text-primary" href="{{ url_for('index') }}">HelpDesk</a>
-
       <div class="d-flex align-items-center">
         <span class="badge bg-primary me-3">Фільтр: {{ request.args.get('status') or 'Всі' }}</span>
-        
         <button class="navbar-toggler border-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar">
-         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-list" viewBox="0 0 16 16">
-  <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5"/>
-</svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-list" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5"/>
+          </svg>
         </button>
       </div>
 
@@ -188,19 +165,20 @@
         <tbody>
           {% for ticket in tickets %}
           <tr>
-            <td class="fw-bold">{{ ticket.author.room_number or '—' }}</td>
-            <td>{{ ticket.created_at.strftime('%d-%m-%Y') }}</td>
-            <td>{{ ticket.author.username.split('@')[0] }}</td>
-            <td>{{ ticket.title }}</td>
-            <td>
+            <td data-label="Кімната" class="fw-bold">{{ ticket.author.room_number or '—' }}</td>
+            <td data-label="Дата">{{ ticket.created_at.strftime('%d-%m-%Y') }}</td>
+            <td data-label="Користувач">{{ ticket.author.username.split('@')[0] }}</td>
+            <td data-label="Тема">{{ ticket.title }}</td>
+            <td data-label="Статус">
               {% if ticket.status == 'Нова' %}
-                <span style="color: #0d6efd;">●</span> {{ ticket.status }}
+                <span style="color: #ffba00;">●</span> {{ ticket.status }}
               {% elif ticket.status == 'В роботі' %}
-                <span style="color: limegreen;">●</span> {{ ticket.status }}
-              {% elif ticket.status == 'Нове' %}
-              <!-- Для адміна зелене - нове, а сіре - відхилено або виконано -->
-                <span style="color: grey;">●</span> {{ ticket.status }}
-              {% elif ticket.status == 'Відхилено/Виконано' %}
+                <span style="color: #0000ff;">●</span> {{ ticket.status }}
+              {% elif ticket.status == 'Виконано' %}
+                <span style="color: #50c878;">●</span> {{ ticket.status }}
+              {% elif ticket.status == 'Відхилено' %}
+                <span style="color: #808080;">●</span> {{ ticket.status }}
+              {% endif %}
             </td>
             <td class="text-end">
               <a href="{{ url_for('edit_ticket', ticket_id=ticket.id) }}" class="edit-icon">
@@ -225,19 +203,18 @@
     <div class="container-fluid justify-content-center">
       <span class="text-muted small">HelpDesk &copy; 2026 | Всі права захищено</span>
     </div>
-    
-    <script>
-      setTimeout(function() {
-        let alerts = document.querySelectorAll('.alert');
-        alerts.forEach(function(alert) {
-          let bsAlert = new bootstrap.Alert(alert);
-          bsAlert.close();
-        });
-      }, 5000);
-    </script>
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    setTimeout(function() {
+      let alerts = document.querySelectorAll('.alert');
+      alerts.forEach(function(alert) {
+        let bsAlert = new bootstrap.Alert(alert);
+        bsAlert.close();
+      });
+    }, 5000);
+  </script>
 </body>
 
 </html>

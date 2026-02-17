@@ -123,7 +123,7 @@ def create_ticket():
             return redirect(url_for('create_ticket'))
 
         if len(description) > 500:
-            flash('Опис занадто довгий (максимум 500 символів)', 'danger')
+            flash('Опис занадто довгий (максимум 500 символів)!', 'danger')
             return redirect(url_for('create_ticket'))
 
         try:
@@ -180,10 +180,13 @@ def edit_ticket(ticket_id):
     
     if request.method == 'POST':
         new_status = request.form.get('status') or ticket.status
-        admin_comment = request.form.get('admin_comment')
+        admin_comment = (request.form.get('admin_comment') or "").strip()
         old_status = ticket.status
 
-        # Бізнес-логіка статусів
+        if len(admin_comment) > 500:
+            flash('Коментар занадто довгий (максимум 500 символів)!', 'danger')
+            return redirect(url_for('edit_ticket', ticket_id=ticket.id))
+
         if new_status != old_status:
             if old_status in ['Виконано', 'Відхилено']:
                 flash('Неможливо змінити закриту заявку!', 'danger')

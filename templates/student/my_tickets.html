@@ -51,38 +51,34 @@
       height: 500px;
       overflow: auto;
     }
-        /* style for status */
-    .in_work{
-      color: #0d6efd;
-    }
-    .new{
-      color: limegreen;
-    }
-    .declined{
-      color: grey;
-    }
-    .etc{
-      color: red;
-    }
-    .else{
-      color: #ffc107;
-    }
+
+    .bg-new { background-color: #ffba00 !important; color: white !important; }
+    .bg-work { background-color: #0000ff !important; color: white !important; }
+    .bg-done { background-color: #50c878 !important; color: white !important; }
+    .bg-declined { background-color: #808080 !important; color: white !important; }
+    .bg-default { background-color: grey !important; color: white !important; }
+
+    .fill-new { fill: #ffba00 !important; }
+    .fill-work { fill: #0000ff !important; }
+    .fill-done { fill: #50c878 !important; }
+    .fill-declined { fill: #808080 !important; }
+    .fill-default { fill: grey !important; }
   </style>
 </head>
 
 <body>
 
   <div class="container mt-3">
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      {% for category, message in messages %}
-        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-          {{ message }}
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-      {% endfor %}
-    {% endif %}
-  {% endwith %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
   </div>
 
   <nav class="navbar bg-white border-bottom fixed-top shadow-sm">
@@ -90,9 +86,9 @@
       <a class="navbar-brand fw-bold text-primary" href="{{ url_for('index') }}">HelpDesk</a>
 
       <button class="navbar-toggler border-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar">
-       <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-list" viewBox="0 0 16 16">
-  <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5"/>
-</svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-list" viewBox="0 0 16 16">
+          <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5" />
+        </svg>
       </button>
 
       <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar">
@@ -110,54 +106,51 @@
         </div>
       </div>
     </div>
-</div>
   </nav>
 
   <main class="central-container shadow-sm">
-
-      <div class="row">
-        <div class="col-md-4">
-          <div id="simple-list-example" class="d-flex flex-column gap-2 text-center">
-            {% for ticket in tickets %}
+    <div class="row">
+      <div class="col-md-4">
+        <div id="simple-list-example" class="d-flex flex-column gap-2 text-center">
+          {% for ticket in tickets %}
             <a class="p-2 rounded shadow-sm mb-2 p-1" href="#ticket-{{ ticket.id }}">
-              {{ ticket.title }} 
+              {{ ticket.title }}
               <span class="ms-2">
-                <svg width="12" height="12" 
-                  fill="{% if ticket.status == 'Нова' %}limegreen{% elif ticket.status == 'В процесі' %}#0d6efd{% else %}grey{% endif %}">
-                  <circle cx="6" cy="6" r="6" />
+                <svg width="12" height="12">
+                  <circle cx="6" cy="6" r="6" class="{% if ticket.status == 'Нова' %}fill-new{% elif ticket.status == 'В роботі' %}fill-work{% elif ticket.status == 'Виконано' %}fill-done{% elif ticket.status == 'Відхилено' %}fill-declined{% else %}fill-default{% endif %}" />
                 </svg>
               </span>
             </a>
-            {% else %}
-              <p class="text-muted">У вас ще немає заявок</p>
-            {% endfor %}
-          </div>
+          {% else %}
+            <p class="text-muted">У вас ще немає заявок</p>
+          {% endfor %}
         </div>
+      </div>
 
-        <div class="col-md-8">
-          <div data-bs-spy="scroll" data-bs-target="#simple-list-example" data-bs-offset="0" data-bs-smooth-scroll="true" class="scrollspy-example p-2" tabindex="0">
-            
-            {% for ticket in tickets %}
+      <div class="col-md-8">
+        <div data-bs-spy="scroll" data-bs-target="#simple-list-example" data-bs-offset="0" data-bs-smooth-scroll="true" class="scrollspy-example p-2" tabindex="0">
+          {% for ticket in tickets %}
             <div id="ticket-{{ ticket.id }}" class="card-body shadow-sm">
               <div class="d-flex justify-content-between">
                 <h5>{{ ticket.title }}</h5>
-                <span style="text-align: center;" class="badge {% if ticket.status == 'Нова' %}text-bg-success{% else %}text-bg-secondary{% endif %} mt-1">
+                <span class="badge mt-1 {% if ticket.status == 'Нова' %}bg-new{% elif ticket.status == 'В роботі' %}bg-work{% elif ticket.status == 'Виконано' %}bg-done{% elif ticket.status == 'Відхилено' %}bg-declined{% else %}bg-default{% endif %}">
                   {{ ticket.status }}
                 </span>
               </div>
               <h6 class="card-subtitle mb-2 text-muted small">
                 {{ ticket.created_at.strftime('%d.%m.%Y %H:%M') }}
               </h6>
-              <p class="card-text" style="overflow-wrap: break-word;"><strong>Ваш опис:</strong><br>{{ ticket.description }}</p>
+              <p class="card-text" style="overflow-wrap: break-word;">
+                <strong>Ваш опис:</strong><br>
+                {{ ticket.description }}
+              </p>
               <hr>
               <p class="card-text" style="overflow-wrap: break-word;">
                 <strong>Відповідь адміністратора:</strong><br>
                 {{ ticket.admin_comment if ticket.admin_comment else "Очікуйте на відповідь..." }}
               </p>
             </div>
-            {% endfor %}
-
-          </div>
+          {% endfor %}
         </div>
       </div>
     </div>
@@ -167,16 +160,6 @@
     <div class="container-fluid justify-content-center">
       <span class="text-muted small">HelpDesk &copy; 2026 | Всі права захищено</span>
     </div>
-
-    <script>
-      setTimeout(function() {
-        let alerts = document.querySelectorAll('.alert');
-        alerts.forEach(function(alert) {
-          let bsAlert = new bootstrap.Alert(alert);
-          bsAlert.close();
-        });
-      }, 5000);
-    </script>
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
