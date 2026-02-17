@@ -58,7 +58,10 @@
     }
 
     @media (max-width: 1024px) {
-      .table thead { display: none; }
+      .table thead th:not(:last-child) { display: none; }
+      .btn-filter {
+         display: inline-block !important;
+         }
       .table, .table tbody, .table tr, .table td {
         display: block;
         width: 100%;
