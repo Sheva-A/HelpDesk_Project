@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="uk">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HelpDesk - Усі звернення</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding-top: 80px;
+      padding-bottom: 70px;
+    }
+
+    .central-container {
+      width: 90%;
+      margin: 0 auto;
+      background: #A1C6F6;
+      border-radius: 10px;
+      padding: 25px;
+    }
+
+    .table-container {
+      background: white;
+      border-radius: 8px;
+      padding: 0;
+      overflow: visible !important;
+    }
+
+    .table {
+      margin-bottom: 0;
+    }
+
+    .btn-filter {
+      background: transparent;
+      border: none;
+      color: #011a35;
+      padding: 5px 10px;
+    }
+
+    td, th {
+      vertical-align: middle;
+      padding: 15px !important;
+    }
+
+    .edit-icon {
+      color: #022E5B;
+      transition: 0.2s;
+    }
+
+    .edit-icon:hover {
+      color: #0d6efd;
+      transform: scale(1.1);
+    }
+
+    @media (max-width: 1024px) {
+      .table thead th:not(:last-child) { display: none; }
+      .btn-filter {
+         display: inline-block !important;
+         }
+      .table, .table tbody, .table tr, .table td {
+        display: block;
+        width: 100%;
+      }
+      .table tr {
+        margin-bottom: 1rem;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        background: #fff;
+        padding: 10px;
+      }
+      .table td {
+        text-align: left;
+        padding: 8px !important;
+        font-size: 14px;
+        border: none;
+        position: relative;
+      }
+      .table td::before {
+        content: attr(data-label);
+        font-weight: bold;
+        display: block;
+        margin-bottom: 4px;
+        color: #022E5B;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container mt-3">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  <nav class="navbar bg-white border-bottom fixed-top shadow-sm">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold text-primary" href="{{ url_for('index') }}">HelpDesk</a>
+      <div class="d-flex align-items-center">
+        <span class="badge bg-primary me-3">Фільтр: {{ request.args.get('status') or 'Всі' }}</span>
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-list" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar">
+        <div class="offcanvas-header border-bottom">
+          <h5 class="offcanvas-title">Меню Адміна</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body">
+          <div class="d-grid gap-2">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-primary">Усі заявки</a>
+            <hr>
+            <a href="{{ url_for('logout') }}" class="btn btn-secondary">Вийти</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="central-container shadow-sm">
+    <h3 class="mb-4 text-dark fw-bold">Список звернень</h3>
+
+    <div class="table-container shadow-sm">
+      <table class="table table-hover">
+        <thead class="table-light">
+          <tr>
+            <th>Кімната</th>
+            <th>Дата</th>
+            <th>Користувач</th>
+            <th>Тема</th>
+            <th>Статус</th>
+            <th class="text-end">
+              <div class="dropdown">
+                <button class="btn-filter dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-funnel-fill" viewBox="0 0 16 16">
+                    <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5z" />
+                  </svg>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-lg">
+                  <li><a class="dropdown-item" href="{{ url_for('dashboard') }}">Всі заявки</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item" href="{{ url_for('dashboard', status='Нова') }}">Нова</a></li>
+                  <li><a class="dropdown-item" href="{{ url_for('dashboard', status='В роботі') }}">В роботі</a></li>
+                  <li><a class="dropdown-item" href="{{ url_for('dashboard', status='Виконано') }}">Виконано</a></li>
+                  <li><a class="dropdown-item" href="{{ url_for('dashboard', status='Відхилено') }}">Відхилено</a></li>
+                </ul>
+              </div>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ticket in tickets %}
+          <tr>
+            <td data-label="Кімната" class="fw-bold">{{ ticket.author.room_number or '—' }}</td>
+            <td data-label="Дата">{{ ticket.created_at.strftime('%d-%m-%Y') }}</td>
+            <td data-label="Користувач">{{ ticket.author.username.split('@')[0] }}</td>
+            <td data-label="Тема">{{ ticket.title }}</td>
+            <td data-label="Статус">
+              {% if ticket.status == 'Нова' %}
+                <span style="color: #ffba00;">●</span> {{ ticket.status }}
+              {% elif ticket.status == 'В роботі' %}
+                <span style="color: #0000ff;">●</span> {{ ticket.status }}
+              {% elif ticket.status == 'Виконано' %}
+                <span style="color: #50c878;">●</span> {{ ticket.status }}
+              {% elif ticket.status == 'Відхилено' %}
+                <span style="color: #808080;">●</span> {{ ticket.status }}
+              {% endif %}
+            </td>
+            <td class="text-end">
+              <a href="{{ url_for('edit_ticket', ticket_id=ticket.id) }}" class="edit-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                  <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
+                  <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z" />
+                </svg>
+              </a>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="6" class="text-center py-5 text-muted">Заявок не знайдено</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <footer class="navbar fixed-bottom bg-white border-top shadow-sm">
+    <div class="container-fluid justify-content-center">
+      <span class="text-muted small">HelpDesk &copy; 2026 | Всі права захищено</span>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    setTimeout(function() {
+      let alerts = document.querySelectorAll('.alert');
+      alerts.forEach(function(alert) {
+        let bsAlert = new bootstrap.Alert(alert);
+        bsAlert.close();
+      });
+    }, 5000);
+  </script>
+</body>
+
+</html>
