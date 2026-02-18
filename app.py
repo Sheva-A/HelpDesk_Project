@@ -3,10 +3,15 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+import os
+
+# Визначаємо шлях до поточної директорії, де лежить app.py
+basedir = os.path.abspath(os.path.dirname(__file__))
 
 app = Flask(__name__)
-# Конфігурація БД та сесій
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///helpdesk.db'
+
+# Створюємо шлях до БД
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'instance', 'helpdesk.db')
 app.config['SECRET_KEY'] = 'helpdesk-secret-key'
 
 db = SQLAlchemy(app)
